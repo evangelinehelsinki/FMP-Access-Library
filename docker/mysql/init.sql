@@ -33,6 +33,36 @@ CREATE TABLE IF NOT EXISTS cache_stats (
     INDEX idx_stat_date (stat_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Create ticker cache table (used by cache layer)
+CREATE TABLE IF NOT EXISTS ticker_cache (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    symbol VARCHAR(50) NOT NULL,
+    data_type VARCHAR(100) NOT NULL,
+    period_key VARCHAR(50),
+    data LONGTEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NULL,
+    UNIQUE KEY idx_symbol_type_period (symbol, data_type, period_key),
+    INDEX idx_symbol (symbol),
+    INDEX idx_expires_at (expires_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Create API keys table for persistent storage
+CREATE TABLE IF NOT EXISTS api_keys (
+    api_key VARCHAR(128) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    tier VARCHAR(50) NOT NULL DEFAULT 'STARTER',
+    rate_limit INT UNSIGNED NOT NULL DEFAULT 60,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_enabled (enabled)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Insert default demo API key
+INSERT INTO api_keys (api_key, name, tier, rate_limit, enabled)
+VALUES ('demo-api-key-12345', 'Demo Client', 'STARTER', 60, TRUE)
+ON DUPLICATE KEY UPDATE api_key = api_key;
+
 -- Create API key usage tracking table (optional - for production)
 CREATE TABLE IF NOT EXISTS api_key_usage (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

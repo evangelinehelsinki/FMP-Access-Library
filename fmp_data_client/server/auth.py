@@ -1,26 +1,26 @@
 """API authentication and authorization."""
 
+import os
 from datetime import datetime, timedelta
 from typing import Dict, Optional
 
+import mysql.connector
 from fastapi import HTTPException, Security, status
 from fastapi.security import APIKeyHeader
 
 # API key header
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
-# In-memory storage for API keys and their metadata
-# In production, this should be in a database
-API_KEYS: Dict[str, Dict] = {
-    # Example API keys - should be loaded from environment/database
-    "demo-api-key-12345": {
-        "name": "Demo Client",
-        "tier": "STARTER",
-        "rate_limit": 60,  # requests per minute
-        "enabled": True,
-        "created_at": datetime.now().isoformat(),
-    },
-}
+# MySQL connection for API key storage
+def get_db_connection():
+    """Get MySQL database connection for API keys."""
+    return mysql.connector.connect(
+        host=os.getenv("FMP_MYSQL_HOST", "mysql"),
+        port=int(os.getenv("FMP_MYSQL_PORT", "3306")),
+        user=os.getenv("FMP_MYSQL_USER", "fmp_user"),
+        password=os.getenv("FMP_MYSQL_PASSWORD"),
+        database=os.getenv("FMP_MYSQL_DATABASE", "fmp_cache"),
+    )
 
 # Rate limiting storage: {api_key: {window_start: timestamp, count: int}}
 RATE_LIMIT_STORAGE: Dict[str, Dict] = {}
@@ -45,7 +45,22 @@ def validate_api_key(api_key: Optional[str] = Security(api_key_header)) -> Dict:
             headers={"WWW-Authenticate": "ApiKey"},
         )
 
-    key_data = API_KEYS.get(api_key)
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(
+            "SELECT * FROM api_keys WHERE api_key = %s",
+            (api_key,)
+        )
+        key_data = cursor.fetchone()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Database error: {str(e)}",
+        )
+
     if not key_data:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -149,20 +164,27 @@ def create_api_key(name: str, tier: str = "STARTER", rate_limit: int = 60) -> st
 
     Returns:
         Generated API key
-
-    Note:
-        In production, use secure random key generation
     """
     import secrets
 
     api_key = f"fmp-{secrets.token_urlsafe(32)}"
-    API_KEYS[api_key] = {
-        "name": name,
-        "tier": tier,
-        "rate_limit": rate_limit,
-        "enabled": True,
-        "created_at": datetime.now().isoformat(),
-    }
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO api_keys (api_key, name, tier, rate_limit, enabled)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (api_key, name, tier, rate_limit, True)
+        )
+        conn.commit()
+        cursor.close()
+        conn.close()
+    except Exception as e:
+        raise Exception(f"Failed to create API key: {str(e)}")
+
     return api_key
 
 
@@ -175,7 +197,17 @@ def revoke_api_key(api_key: str) -> bool:
     Returns:
         True if key was revoked, False if not found
     """
-    if api_key in API_KEYS:
-        API_KEYS[api_key]["enabled"] = False
-        return True
-    return False
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE api_keys SET enabled = FALSE WHERE api_key = %s",
+            (api_key,)
+        )
+        rows_affected = cursor.rowcount
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return rows_affected > 0
+    except Exception:
+        return False
