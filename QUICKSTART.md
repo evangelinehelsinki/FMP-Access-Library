@@ -30,25 +30,29 @@ pip install -e ".[dev,cli,server]"
 
 ### Step 2: Set Up Environment Variables
 
-Create a `.env` file or export variables:
+**For Local Python Usage** (not Docker):
+
+Create a `.env` file with these variables (no `export`):
 
 ```bash
 # Required
-export FMP_API_KEY=your_fmp_api_key_here
-export FMP_TIER=starter  # or premium, ultimate
+FMP_API_KEY=your_fmp_api_key_here
+FMP_TIER=STARTER  # STARTER, PREMIUM, or ULTIMATE
 
 # Optional: MySQL Cache
-export FMP_CACHE_ENABLED=true
-export FMP_MYSQL_HOST=localhost
-export FMP_MYSQL_PORT=3306
-export FMP_MYSQL_USER=root
-export FMP_MYSQL_PASSWORD=your_password
-export FMP_MYSQL_DATABASE=fmp_cache
+FMP_CACHE_ENABLED=true
+FMP_MYSQL_HOST=localhost
+FMP_MYSQL_PORT=3306
+FMP_MYSQL_USER=root
+FMP_MYSQL_PASSWORD=your_password
+FMP_MYSQL_DATABASE=fmp_cache
 
 # Optional: LLM Summarization
-export FMP_SUMMARIZATION_ENABLED=true
-export ANTHROPIC_API_KEY=your_anthropic_key_here
+FMP_SUMMARIZATION_ENABLED=true
+ANTHROPIC_API_KEY=your_anthropic_key_here
 ```
+
+**For Docker Deployment**: See [DOCKER.md](DOCKER.md) for the correct Docker environment setup.
 
 ### Step 3: Set Up MySQL (Optional)
 

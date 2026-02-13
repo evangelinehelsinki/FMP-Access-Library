@@ -2,6 +2,13 @@
 
 A Python library for retrieving and analyzing financial data from [Financial Modeling Prep (FMP) API](https://site.financialmodelingprep.com/developer/docs), designed for integration with an AI-powered trading orchestrator.
 
+## 📚 Documentation
+
+- **[QUICKSTART.md](QUICKSTART.md)** - Get started in 5 minutes
+- **[DOCKER.md](DOCKER.md)** - Docker deployment guide
+- **[REST_API.md](REST_API.md)** - REST API reference
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history
+
 ## Overview
 
 This library provides a comprehensive, tier-aware interface to FMP's financial data APIs with:
@@ -88,11 +95,14 @@ client = FMPDataClient(config)
 
 ### Environment Variables
 
+**For Local Python Usage**:
+
 ```bash
 FMP_API_KEY=your_fmp_api_key
 FMP_TIER=STARTER  # STARTER, PREMIUM, ULTIMATE
 
 # Cache
+FMP_CACHE_ENABLED=true
 FMP_MYSQL_HOST=localhost
 FMP_MYSQL_PORT=3306
 FMP_MYSQL_USER=fmp_cache
@@ -100,8 +110,11 @@ FMP_MYSQL_PASSWORD=your_password
 FMP_MYSQL_DATABASE=fmp_data
 
 # LLM Summarization
+FMP_SUMMARIZATION_ENABLED=false
 ANTHROPIC_API_KEY=your_anthropic_key
 ```
+
+**For Docker Deployment**: See [DOCKER.md](DOCKER.md) - uses different variable names (`MYSQL_*` instead of `FMP_MYSQL_*`).
 
 ## Usage
 
@@ -709,58 +722,31 @@ fmp cache clear --all
 
 ## Docker Deployment
 
-```dockerfile
-FROM python:3.11-slim
+**See [DOCKER.md](DOCKER.md) for complete deployment guide.**
 
-WORKDIR /app
+Quick start:
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+```bash
+# 1. Copy environment template
+cp .env.example .env
 
-COPY . .
+# 2. Edit .env with your API keys
+nano .env
 
-# Environment variables should be provided at runtime
-ENV FMP_API_KEY=""
-ENV FMP_TIER="STARTER"
+# 3. Start services
+docker compose up -d
 
-CMD ["python", "-m", "fmp_data_client.server"]
+# 4. Check health
+curl http://localhost:8000/health
 ```
 
-```yaml
-# docker-compose.yml
-version: '3.8'
+The deployment includes:
+- REST API server (FastAPI/Uvicorn)
+- MySQL database for caching
+- Automatic health checks
+- Persistent storage volumes
 
-services:
-  fmp-client:
-    build: .
-    environment:
-      - FMP_API_KEY=${FMP_API_KEY}
-      - FMP_TIER=${FMP_TIER}
-      - FMP_MYSQL_HOST=mysql
-      - FMP_MYSQL_USER=fmp
-      - FMP_MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - FMP_MYSQL_DATABASE=fmp_data
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
-    depends_on:
-      - mysql
-    ports:
-      - "8080:8080"
-    restart: unless-stopped
-
-  mysql:
-    image: mysql:8.0
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_DATABASE=fmp_data
-      - MYSQL_USER=fmp
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-    volumes:
-      - mysql_data:/var/lib/mysql
-    restart: unless-stopped
-
-volumes:
-  mysql_data:
-```
+See [REST_API.md](REST_API.md) for API documentation.
 
 ## API Reference
 

@@ -51,9 +51,9 @@ services:
       start_period: 40s
     networks:
       - fmp-network
-    volumes:
-      # Mount source code for development (comment out for production)
-      # - ./fmp_data_client:/app/fmp_data_client:ro
+    # Uncomment to mount source code for development:
+    # volumes:
+    #   - ./fmp_data_client:/app/fmp_data_client:ro
 
 volumes:
   mysql_data:
