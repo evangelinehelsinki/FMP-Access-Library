@@ -275,7 +275,7 @@ def cache_status():
 
     async def _cache_status():
         async with FMPDataClient.from_env() as client:
-            info = client.get_cache_info()
+            info = await client.get_cache_info()
 
             table = Table(title="Cache Status")
             table.add_column("Property", style="cyan")
@@ -344,7 +344,7 @@ def config_test():
                 # Show rate limit status
                 status = client.get_rate_limit_status()
                 console.print(f"\nRate limit: {status['calls_per_minute']} calls/minute")
-                console.print(f"Available tokens: {status['available_tokens']:.0f}")
+                console.print(f"Available tokens: {status['tokens_remaining']:.0f}")
 
         except Exception as e:
             console.print(f"[red]✗ API connection failed: {e}[/red]")
@@ -366,8 +366,8 @@ def rate_limit():
             table.add_column("Value", style="white")
 
             table.add_row("Calls per Minute", str(status["calls_per_minute"]))
-            table.add_row("Available Tokens", f"{status['available_tokens']:.2f}")
-            table.add_row("Last Refill", str(status["last_refill"]))
+            table.add_row("Available Tokens", f"{status['tokens_remaining']:.2f}")
+            table.add_row("Refill Rate", f"{status['refill_rate_per_second']:.2f} tokens/sec")
 
             console.print(table)
 

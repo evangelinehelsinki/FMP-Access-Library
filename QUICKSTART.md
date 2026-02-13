@@ -19,7 +19,7 @@ Get up and running with the FMP Data Client in minutes!
 
 ```bash
 # Clone the repository (or use pip when published)
-cd /home/evangeline/Projects/FMP-Access-Library
+cd FMP-Access-Library
 
 # Install in development mode
 pip install -e .
@@ -353,7 +353,7 @@ pytest -v
 ## 🆘 Getting Help
 
 - **Documentation**: `README.md`
-- **Implementation Status**: `IMPLEMENTATION_STATUS_V2.md`
+- **Implementation Status**: See `CHANGELOG.md` for current status
 - **Changelog**: `CHANGELOG.md`
 - **Issues**: Report bugs on GitHub
 - **Examples**: See `examples/` directory

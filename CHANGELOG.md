@@ -132,13 +132,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Known Limitations
 
 - No institutional analysis module yet (Phase 7)
-- No REST API server yet (Phase 10)
-- No Docker deployment yet (Phase 11)
 - Test coverage at ~30% (needs expansion)
 - Transcript fetching uses simplified quarter calculation
 - LLM summarization requires separate Anthropic API key
 
 ## [Unreleased]
+
+### Completed Since 0.1.0
+
+#### Phase 10: REST API Server
+- FastAPI-based HTTP API with OpenAPI documentation
+- API key authentication via MySQL-backed storage
+- Per-client rate limiting
+- Health check endpoints
+
+#### Phase 11: Docker Deployment
+- Multi-stage Dockerfile for containerization
+- docker-compose with MySQL service
+- Environment variable configuration
+- Health check integration
 
 ### Planned (Future Versions)
 
@@ -147,19 +159,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Weighted holder scoring system
 - Active vs passive classification
 - Position change significance detection
-
-#### Phase 10: REST API Server
-- FastAPI-based HTTP API
-- Endpoints mirroring CLI commands
-- API key authentication
-- Rate limiting per API key
-- OpenAPI documentation
-
-#### Phase 11: Docker Deployment
-- Dockerfile for containerization
-- docker-compose with MySQL
-- Environment variable configuration
-- Health check endpoints
 
 #### Phase 12: Documentation Enhancement
 - API reference documentation
