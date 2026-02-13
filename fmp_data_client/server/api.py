@@ -112,8 +112,11 @@ async def health_check():
     # Check cache if enabled
     if client.cache:
         try:
-            cache_info = client.get_cache_info()
-            components["cache"] = "healthy" if cache_info else "degraded"
+            # Test cache connection with a simple ping
+            conn = client.cache.pool.get_connection()
+            conn.ping(reconnect=True)
+            conn.close()
+            components["cache"] = "healthy"
         except Exception:
             components["cache"] = "unhealthy"
     else:
