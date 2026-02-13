@@ -19,7 +19,7 @@ class Quote(FMPBaseModel):
     change: float = Field(..., description="Price change in dollars")
     change_percent: float = Field(
         ...,
-        alias="changesPercentage",
+        alias="changePercentage",
         description="Price change percentage"
     )
 
@@ -35,7 +35,7 @@ class Quote(FMPBaseModel):
     )
 
     # Market cap
-    market_cap: Optional[int] = Field(
+    market_cap: Optional[float] = Field(
         None,
         alias="marketCap",
         description="Market capitalization"
@@ -102,68 +102,50 @@ class Quote(FMPBaseModel):
 
 
 class AftermarketQuote(FMPBaseModel):
-    """After-hours and pre-market quote data."""
+    """After-market quote data (bid/ask spread)."""
 
     symbol: str = Field(..., description="Stock ticker symbol")
 
-    # Pre-market
-    pre_market_price: Optional[float] = Field(
+    # Bid
+    bid_size: Optional[int] = Field(
         None,
-        alias="preMarketPrice",
-        description="Pre-market price"
+        alias="bidSize",
+        description="Bid size"
     )
-    pre_market_change: Optional[float] = Field(
+    bid_price: Optional[float] = Field(
         None,
-        alias="preMarketChange",
-        description="Pre-market change in dollars"
-    )
-    pre_market_change_percent: Optional[float] = Field(
-        None,
-        alias="preMarketChangePercentage",
-        description="Pre-market change percentage"
+        alias="bidPrice",
+        description="Bid price"
     )
 
-    # After-hours
-    after_hours_price: Optional[float] = Field(
+    # Ask
+    ask_size: Optional[int] = Field(
         None,
-        alias="afterHoursPrice",
-        description="After-hours price"
+        alias="askSize",
+        description="Ask size"
     )
-    after_hours_change: Optional[float] = Field(
+    ask_price: Optional[float] = Field(
         None,
-        alias="afterHoursChange",
-        description="After-hours change in dollars"
-    )
-    after_hours_change_percent: Optional[float] = Field(
-        None,
-        alias="afterHoursChangePercentage",
-        description="After-hours change percentage"
+        alias="askPrice",
+        description="Ask price"
     )
 
     # Volume
-    pre_market_volume: Optional[int] = Field(
-        None,
-        alias="preMarketVolume",
-        description="Pre-market volume"
-    )
-    after_hours_volume: Optional[int] = Field(
-        None,
-        alias="afterHoursVolume",
-        description="After-hours volume"
-    )
+    volume: Optional[int] = Field(None, description="Trading volume")
 
     # Timestamp
     timestamp: Optional[int] = Field(
         None,
-        description="Unix timestamp"
+        description="Unix timestamp (milliseconds)"
     )
 
     @property
-    def has_pre_market_data(self) -> bool:
-        """Check if pre-market data is available."""
-        return self.pre_market_price is not None
+    def spread(self) -> Optional[float]:
+        """Calculate bid-ask spread.
 
-    @property
-    def has_after_hours_data(self) -> bool:
-        """Check if after-hours data is available."""
-        return self.after_hours_price is not None
+        Returns:
+            Spread or None if data unavailable
+        """
+        if self.bid_price is not None and self.ask_price is not None:
+            return self.ask_price - self.bid_price
+        return None

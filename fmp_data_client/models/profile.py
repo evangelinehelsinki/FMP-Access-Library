@@ -70,9 +70,9 @@ class CompanyProfile(FMPBaseModel):
     country: Optional[str] = Field(None, description="Country")
 
     # Financial info
-    market_cap: Optional[int] = Field(
+    market_cap: Optional[float] = Field(
         None,
-        alias="mktCap",
+        alias="marketCap",
         description="Market capitalization"
     )
 
@@ -86,7 +86,7 @@ class CompanyProfile(FMPBaseModel):
     # Exchange info
     exchange: Optional[str] = Field(
         None,
-        alias="exchangeShortName",
+        alias="exchange",
         description="Stock exchange"
     )
     currency: Optional[str] = Field(None, description="Trading currency")
@@ -120,14 +120,14 @@ class CompanyProfile(FMPBaseModel):
     beta: Optional[float] = Field(None, description="Stock beta")
     vol_avg: Optional[int] = Field(
         None,
-        alias="volAvg",
+        alias="averageVolume",
         description="Average volume"
     )
 
     # Price range
     last_div: Optional[float] = Field(
         None,
-        alias="lastDiv",
+        alias="lastDividend",
         description="Last dividend amount"
     )
     range: Optional[str] = Field(None, description="52-week price range")

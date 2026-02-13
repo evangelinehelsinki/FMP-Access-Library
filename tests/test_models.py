@@ -65,7 +65,7 @@ class TestQuote:
             "price": 100.0,
             "volume": 1000000,
             "change": 1.0,
-            "changesPercentage": 1.0,
+            "changePercentage": 1.0,
             "dayHigh": 101.0,
             "dayLow": 99.0,
             "previousClose": 99.0,

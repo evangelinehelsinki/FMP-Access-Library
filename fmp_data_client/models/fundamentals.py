@@ -19,12 +19,12 @@ class IncomeStatement(FMPBaseModel):
     period: str = Field(..., description="Period type (Q1, Q2, FY, etc.)")
     calendar_year: Optional[str] = Field(
         None,
-        alias="calendarYear",
+        alias="fiscalYear",
         description="Calendar year"
     )
     filing_date: Optional[date] = Field(
         None,
-        alias="fillingDate",
+        alias="filingDate",
         description="SEC filing date"
     )
     accepted_date: Optional[datetime] = Field(
@@ -199,12 +199,12 @@ class BalanceSheet(FMPBaseModel):
     period: str = Field(..., description="Period type")
     calendar_year: Optional[str] = Field(
         None,
-        alias="calendarYear",
+        alias="fiscalYear",
         description="Calendar year"
     )
     filing_date: Optional[date] = Field(
         None,
-        alias="fillingDate",
+        alias="filingDate",
         description="Filing date"
     )
     accepted_date: Optional[datetime] = Field(
@@ -433,12 +433,12 @@ class CashFlowStatement(FMPBaseModel):
     period: str = Field(..., description="Period type")
     calendar_year: Optional[str] = Field(
         None,
-        alias="calendarYear",
+        alias="fiscalYear",
         description="Calendar year"
     )
     filing_date: Optional[date] = Field(
         None,
-        alias="fillingDate",
+        alias="filingDate",
         description="Filing date"
     )
     accepted_date: Optional[datetime] = Field(
@@ -628,7 +628,7 @@ class KeyMetrics(FMPBaseModel):
     period: Optional[str] = Field(None, description="Period")
     calendar_year: Optional[str] = Field(
         None,
-        alias="calendarYear",
+        alias="fiscalYear",
         description="Calendar year"
     )
 
@@ -825,7 +825,7 @@ class FinancialRatios(FMPBaseModel):
     period: Optional[str] = Field(None, description="Period")
     calendar_year: Optional[str] = Field(
         None,
-        alias="calendarYear",
+        alias="fiscalYear",
         description="Calendar year"
     )
 

@@ -31,7 +31,7 @@ class QuoteResponse(BaseModel):
     day_high: float
     day_low: float
     previous_close: float
-    market_cap: Optional[int] = None
+    market_cap: Optional[float] = None
     timestamp: Optional[int] = None
 
 
@@ -47,7 +47,7 @@ class ProfileResponse(BaseModel):
     employees: Optional[int] = None
     website: Optional[str] = None
     country: Optional[str] = None
-    market_cap: Optional[int] = None
+    market_cap: Optional[float] = None
     exchange: Optional[str] = None
 
 
