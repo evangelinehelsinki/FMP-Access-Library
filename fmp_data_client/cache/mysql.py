@@ -405,11 +405,11 @@ class MySQLCache:
             logger.error(f"Error clearing cache: {e}")
             return False
 
-    async def get_cache_info(self, symbol: str) -> Dict[str, Any]:
-        """Get cache information for a symbol.
+    async def get_cache_info(self, symbol: Optional[str] = None) -> Dict[str, Any]:
+        """Get cache information, optionally filtered by symbol.
 
         Args:
-            symbol: Stock ticker symbol
+            symbol: Optional stock ticker symbol for per-symbol stats
 
         Returns:
             Dictionary with cache statistics
@@ -422,35 +422,47 @@ class MySQLCache:
                 with self._get_connection() as conn:
                     cursor = conn.cursor(dictionary=True)
 
-                    # Count cache entries
-                    cursor.execute(
-                        "SELECT COUNT(*) as count FROM ticker_cache WHERE symbol = %s",
-                        (symbol,)
-                    )
-                    ticker_count = cursor.fetchone()["count"]
+                    if symbol:
+                        # Per-symbol counts
+                        cursor.execute(
+                            "SELECT COUNT(*) as count FROM ticker_cache WHERE symbol = %s",
+                            (symbol,)
+                        )
+                        ticker_count = cursor.fetchone()["count"]
 
-                    # Count summaries
-                    cursor.execute(
-                        "SELECT COUNT(*) as count FROM transcript_summaries WHERE symbol = %s",
-                        (symbol,)
-                    )
-                    transcript_count = cursor.fetchone()["count"]
+                        cursor.execute(
+                            "SELECT COUNT(*) as count FROM transcript_summaries WHERE symbol = %s",
+                            (symbol,)
+                        )
+                        transcript_count = cursor.fetchone()["count"]
 
-                    cursor.execute(
-                        "SELECT COUNT(*) as count FROM filing_summaries WHERE symbol = %s",
-                        (symbol,)
-                    )
-                    filing_count = cursor.fetchone()["count"]
+                        cursor.execute(
+                            "SELECT COUNT(*) as count FROM filing_summaries WHERE symbol = %s",
+                            (symbol,)
+                        )
+                        filing_count = cursor.fetchone()["count"]
+                    else:
+                        # Overall counts
+                        cursor.execute("SELECT COUNT(*) as count FROM ticker_cache")
+                        ticker_count = cursor.fetchone()["count"]
+
+                        cursor.execute("SELECT COUNT(*) as count FROM transcript_summaries")
+                        transcript_count = cursor.fetchone()["count"]
+
+                        cursor.execute("SELECT COUNT(*) as count FROM filing_summaries")
+                        filing_count = cursor.fetchone()["count"]
 
                     cursor.close()
 
-                    return {
+                    info = {
                         "enabled": True,
-                        "symbol": symbol,
                         "ticker_cache_entries": ticker_count,
                         "transcript_summaries": transcript_count,
                         "filing_summaries": filing_count,
                     }
+                    if symbol:
+                        info["symbol"] = symbol
+                    return info
 
             return await asyncio.to_thread(_get_info)
 

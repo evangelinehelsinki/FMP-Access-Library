@@ -1,8 +1,11 @@
 """Main FMP Data Client - orchestrates all components."""
 
 import asyncio
+import logging
 from datetime import datetime
 from typing import Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 from .cache import MySQLCache
 from .config import FMPConfig
@@ -243,7 +246,7 @@ class FMPDataClient:
         for name, result in zip(task_names, results):
             if isinstance(result, Exception):
                 # Log error but continue
-                print(f"Error fetching {name} for {symbol}: {result}")
+                logger.warning("Error fetching %s for %s: %s", name, symbol, result)
                 continue
             ticker_data_dict[name] = result
 
@@ -602,11 +605,11 @@ class FMPDataClient:
 
     # Cache management
 
-    async def get_cache_info(self, symbol: str) -> Dict:
-        """Get cache information for a symbol.
+    async def get_cache_info(self, symbol: Optional[str] = None) -> Dict:
+        """Get cache information.
 
         Args:
-            symbol: Stock ticker symbol
+            symbol: Optional stock ticker symbol for per-symbol stats
 
         Returns:
             Dictionary with cache statistics

@@ -83,7 +83,7 @@ async def analyze_stock(symbol: str):
                 print(f"  {article.site} | {article.published_date.strftime('%Y-%m-%d')}")
 
         # Cache info
-        cache_info = client.get_cache_info()
+        cache_info = await client.get_cache_info()
         print(f"\n--- CACHE STATUS ---")
         print(f"Enabled: {cache_info['enabled']}")
 
@@ -91,7 +91,7 @@ async def analyze_stock(symbol: str):
         rate_status = client.get_rate_limit_status()
         print(f"\n--- RATE LIMIT STATUS ---")
         print(f"Calls per minute: {rate_status['calls_per_minute']}")
-        print(f"Available tokens: {rate_status['available_tokens']:.0f}")
+        print(f"Available tokens: {rate_status['tokens_remaining']:.0f}")
 
 
 async def analyze_transcript_with_llm(symbol: str, year: int, quarter: int):

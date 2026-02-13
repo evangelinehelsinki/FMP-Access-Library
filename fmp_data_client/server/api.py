@@ -1,5 +1,8 @@
 """FastAPI REST API server for FMP Data Client."""
 
+import logging
+import os
+from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any, Dict, Optional
 
@@ -25,8 +28,24 @@ from .models import (
     TickerDataResponse,
 )
 
+logger = logging.getLogger(__name__)
+
 # API version
 API_VERSION = "1.0.0"
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifecycle: startup and shutdown."""
+    config = FMPConfig.from_env()
+    client = FMPDataClient(config)
+    await client.fetcher.start()
+    app.state.fmp_client = client
+    yield
+    await client.fetcher.close()
+    if client.cache:
+        client.cache.close()
+
 
 # Create FastAPI app
 app = FastAPI(
@@ -35,50 +54,40 @@ app = FastAPI(
     version=API_VERSION,
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
-# Add CORS middleware
+# CORS configuration
+_cors_origins_str = os.getenv("FMP_CORS_ORIGINS", "http://localhost:3000,http://localhost:8080")
+_cors_origins = [origin.strip() for origin in _cors_origins_str.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Shared FMP client instance
-_fmp_client: Optional[FMPDataClient] = None
-
 
 async def get_fmp_client() -> FMPDataClient:
-    """Get or create FMP client instance.
+    """Get FMP client instance from app state.
 
     Returns:
         FMP client instance
     """
-    global _fmp_client
-    if _fmp_client is None:
-        config = FMPConfig.from_env()
-        _fmp_client = FMPDataClient(config)
-    return _fmp_client
+    return app.state.fmp_client
 
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc: Exception):
-    """Handle all unhandled exceptions.
-
-    Args:
-        request: Request object
-        exc: Exception
-
-    Returns:
-        JSON error response
-    """
+    """Handle all unhandled exceptions."""
+    logger.error("Unhandled exception on %s %s: %s", request.method, request.url.path, exc, exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "error": "Internal server error",
-            "detail": str(exc),
+            "detail": "An unexpected error occurred. Please try again later.",
             "status_code": 500,
         },
     )
@@ -338,15 +347,11 @@ async def get_cache_status(
         )
 
     try:
-        # Note: get_cache_info requires a symbol parameter, but for general status we pass None
-        # The API should probably have a separate method for overall cache stats
-        cache_info = {"enabled": True}  # Simplified for now
-        if client.cache:
-            cache_info = {"enabled": True, "total_entries": 0, "hit_rate": 0.0}
+        cache_info = await client.get_cache_info()
         return CacheStatusResponse(
             enabled=True,
-            total_entries=cache_info.get("total_entries"),
-            hit_rate=cache_info.get("hit_rate"),
+            total_entries=cache_info.get("ticker_cache_entries"),
+            hit_rate=None,
             stats=cache_info,
         )
     except Exception as e:

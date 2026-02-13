@@ -543,6 +543,6 @@ Consider integrating:
 ## Support
 
 For issues and questions:
-- GitHub Issues: https://github.com/yourusername/fmp-data-client/issues
+- GitHub Issues: https://github.com/evangelinehelsinki/FMP-Access-Library/issues
 - Documentation: See README.md and code docstrings
 - OpenAPI Docs: http://localhost:8000/docs
