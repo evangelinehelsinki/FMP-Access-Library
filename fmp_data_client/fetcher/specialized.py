@@ -59,7 +59,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.QUOTE,
-            path_params={"symbol": symbol}
+            query_params={"symbol": symbol}
         )
         if data and len(data) > 0:
             return Quote(**data[0])
@@ -76,7 +76,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.AFTERMARKET_QUOTE,
-            path_params={"symbol": symbol}
+            query_params={"symbol": symbol}
         )
         if data and len(data) > 0:
             return AftermarketQuote(**data[0])
@@ -95,7 +95,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.PROFILE,
-            path_params={"symbol": symbol}
+            query_params={"symbol": symbol}
         )
         if data and len(data) > 0:
             return CompanyProfile(**data[0])
@@ -112,7 +112,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.EXECUTIVES,
-            path_params={"symbol": symbol}
+            query_params={"symbol": symbol}
         )
         return [Executive(**item) for item in data]
 
@@ -127,12 +127,17 @@ class SpecializedFetcher:
         Returns:
             List of DividendRecord objects
         """
-        data = await self.fetcher.fetch_json(
+        data = await self.fetcher.fetch(
             Endpoint.DIVIDENDS_HISTORICAL,
-            path_params={"symbol": symbol}
+            query_params={"symbol": symbol}
         )
-        historical = data.get("historical", [])
-        return [DividendRecord(**item) for item in historical]
+        # Stable API returns a flat list; fall back to nested format
+        if isinstance(data, list):
+            return [DividendRecord(**item) for item in data]
+        if isinstance(data, dict):
+            historical = data.get("historical", [])
+            return [DividendRecord(**item) for item in historical]
+        return []
 
     async def fetch_splits(self, symbol: str) -> List[StockSplit]:
         """Fetch stock split history.
@@ -143,12 +148,17 @@ class SpecializedFetcher:
         Returns:
             List of StockSplit objects
         """
-        data = await self.fetcher.fetch_json(
+        data = await self.fetcher.fetch(
             Endpoint.STOCK_SPLIT_HISTORICAL,
-            path_params={"symbol": symbol}
+            query_params={"symbol": symbol}
         )
-        historical = data.get("historical", [])
-        return [StockSplit(**item) for item in historical]
+        # Stable API returns a flat list; fall back to nested format
+        if isinstance(data, list):
+            return [StockSplit(**item) for item in data]
+        if isinstance(data, dict):
+            historical = data.get("historical", [])
+            return [StockSplit(**item) for item in historical]
+        return []
 
     async def fetch_earnings_calendar(
         self,
@@ -200,8 +210,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.INCOME_STATEMENT,
-            path_params={"symbol": symbol},
-            query_params={"period": period, "limit": limit}
+            query_params={"symbol": symbol, "period": period, "limit": limit}
         )
         return [IncomeStatement(**item) for item in data]
 
@@ -223,8 +232,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.BALANCE_SHEET,
-            path_params={"symbol": symbol},
-            query_params={"period": period, "limit": limit}
+            query_params={"symbol": symbol, "period": period, "limit": limit}
         )
         return [BalanceSheet(**item) for item in data]
 
@@ -246,8 +254,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.CASH_FLOW,
-            path_params={"symbol": symbol},
-            query_params={"period": period, "limit": limit}
+            query_params={"symbol": symbol, "period": period, "limit": limit}
         )
         return [CashFlowStatement(**item) for item in data]
 
@@ -269,8 +276,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.KEY_METRICS,
-            path_params={"symbol": symbol},
-            query_params={"period": period, "limit": limit}
+            query_params={"symbol": symbol, "period": period, "limit": limit}
         )
         return [KeyMetrics(**item) for item in data]
 
@@ -292,8 +298,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.FINANCIAL_RATIOS,
-            path_params={"symbol": symbol},
-            query_params={"period": period, "limit": limit}
+            query_params={"symbol": symbol, "period": period, "limit": limit}
         )
         return [FinancialRatios(**item) for item in data]
 
@@ -327,7 +332,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.DCF,
-            path_params={"symbol": symbol}
+            query_params={"symbol": symbol}
         )
         if data and len(data) > 0:
             return DCFValuation(**data[0])
@@ -351,8 +356,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.ENTERPRISE_VALUE,
-            path_params={"symbol": symbol},
-            query_params={"period": period, "limit": limit}
+            query_params={"symbol": symbol, "period": period, "limit": limit}
         )
         return [EnterpriseValue(**item) for item in data]
 
@@ -376,8 +380,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.ANALYST_ESTIMATES,
-            path_params={"symbol": symbol},
-            query_params={"period": period, "limit": limit}
+            query_params={"symbol": symbol, "period": period, "limit": limit}
         )
         return [AnalystEstimate(**item) for item in data]
 
@@ -442,7 +445,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.INSTITUTIONAL_HOLDERS,
-            path_params={"symbol": symbol}
+            query_params={"symbol": symbol}
         )
         return [InstitutionalHolder(**item) for item in data]
 
@@ -486,8 +489,7 @@ class SpecializedFetcher:
         """
         data = await self.fetcher.fetch_list(
             Endpoint.EARNING_CALL_TRANSCRIPT,
-            path_params={"symbol": symbol},
-            query_params={"year": year, "quarter": quarter}
+            query_params={"symbol": symbol, "year": year, "quarter": quarter}
         )
         if data and len(data) > 0:
             return EarningsTranscript(**data[0])
@@ -511,13 +513,12 @@ class SpecializedFetcher:
         Returns:
             List of SECFiling objects
         """
-        query_params = {"limit": limit}
+        query_params = {"symbol": symbol, "limit": limit}
         if filing_type:
             query_params["type"] = filing_type
 
         data = await self.fetcher.fetch_list(
             Endpoint.SEC_FILINGS,
-            path_params={"symbol": symbol},
             query_params=query_params
         )
         return [SECFiling(**item) for item in data]
@@ -540,7 +541,7 @@ class SpecializedFetcher:
         """
         query_params = {"limit": limit}
         if symbol:
-            query_params["tickers"] = symbol
+            query_params["symbols"] = symbol
 
         data = await self.fetcher.fetch_list(
             Endpoint.STOCK_NEWS,
@@ -566,17 +567,20 @@ class SpecializedFetcher:
         Returns:
             List of price records
         """
-        query_params = {}
+        query_params = {"symbol": symbol}
         if from_date:
             query_params["from"] = from_date
         if to_date:
             query_params["to"] = to_date
 
-        data = await self.fetcher.fetch_json(
+        data = await self.fetcher.fetch(
             Endpoint.HISTORICAL_PRICES,
-            path_params={"symbol": symbol},
             query_params=query_params
         )
 
-        # Historical prices are in "historical" key
-        return data.get("historical", [])
+        # Stable API returns a flat list; fall back to nested format
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict):
+            return data.get("historical", [])
+        return []

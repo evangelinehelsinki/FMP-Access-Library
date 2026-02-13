@@ -6,74 +6,74 @@ from ..config import Tier
 
 
 class Endpoint(str, Enum):
-    """FMP API endpoints."""
+    """FMP API endpoints (stable API)."""
 
     # Quote data
-    QUOTE = "/v3/quote/{symbol}"
-    AFTERMARKET_QUOTE = "/v4/pre-post-market/{symbol}"
-    QUOTE_SHORT = "/v3/quote-short/{symbol}"
+    QUOTE = "/stable/quote"
+    AFTERMARKET_QUOTE = "/stable/aftermarket-quote"
+    QUOTE_SHORT = "/stable/quote-short"
 
     # Company profile
-    PROFILE = "/v3/profile/{symbol}"
-    EXECUTIVES = "/v3/key-executives/{symbol}"
+    PROFILE = "/stable/profile"
+    EXECUTIVES = "/stable/key-executives"
 
     # Corporate events
-    DIVIDENDS_HISTORICAL = "/v3/historical-price-full/stock_dividend/{symbol}"
-    STOCK_SPLIT_HISTORICAL = "/v3/historical-price-full/stock_split/{symbol}"
-    EARNINGS_CALENDAR = "/v3/earnings-calendar"
-    EARNINGS_HISTORICAL = "/v3/historical/earning_calendar/{symbol}"
+    DIVIDENDS_HISTORICAL = "/stable/dividends"
+    STOCK_SPLIT_HISTORICAL = "/stable/splits"
+    EARNINGS_CALENDAR = "/stable/earnings-calendar"
+    EARNINGS_HISTORICAL = "/stable/earnings"
 
     # Fundamental statements
-    INCOME_STATEMENT = "/v3/income-statement/{symbol}"
-    BALANCE_SHEET = "/v3/balance-sheet-statement/{symbol}"
-    CASH_FLOW = "/v3/cash-flow-statement/{symbol}"
+    INCOME_STATEMENT = "/stable/income-statement"
+    BALANCE_SHEET = "/stable/balance-sheet-statement"
+    CASH_FLOW = "/stable/cash-flow-statement"
 
     # Financial metrics
-    KEY_METRICS = "/v3/key-metrics/{symbol}"
-    FINANCIAL_RATIOS = "/v3/ratios/{symbol}"
-    FINANCIAL_SCORES = "/v4/score"
+    KEY_METRICS = "/stable/key-metrics"
+    FINANCIAL_RATIOS = "/stable/ratios"
+    FINANCIAL_SCORES = "/stable/financial-scores"
 
     # Valuation
-    DCF = "/v3/discounted-cash-flow/{symbol}"
-    HISTORICAL_DCF = "/v3/historical-discounted-cash-flow-statement/{symbol}"
-    ENTERPRISE_VALUE = "/v3/enterprise-values/{symbol}"
+    DCF = "/stable/discounted-cash-flow"
+    HISTORICAL_DCF = "/stable/levered-discounted-cash-flow"
+    ENTERPRISE_VALUE = "/stable/enterprise-values"
 
     # Analyst data
-    ANALYST_ESTIMATES = "/v3/analyst-estimates/{symbol}"
-    PRICE_TARGET = "/v4/price-target"
-    PRICE_TARGET_SUMMARY = "/v4/price-target-summary"
-    PRICE_TARGET_CONSENSUS = "/v4/price-target-consensus"
-    ANALYST_UPGRADES_DOWNGRADES = "/v4/upgrades-downgrades"
-    ANALYST_RECOMMENDATIONS = "/v3/analyst-stock-recommendations/{symbol}"
+    ANALYST_ESTIMATES = "/stable/analyst-estimates"
+    PRICE_TARGET = "/stable/price-target-consensus"
+    PRICE_TARGET_SUMMARY = "/stable/price-target-summary"
+    PRICE_TARGET_CONSENSUS = "/stable/price-target-consensus"
+    ANALYST_UPGRADES_DOWNGRADES = "/stable/grades"
+    ANALYST_RECOMMENDATIONS = "/stable/grades-consensus"
 
     # Ownership
-    INSTITUTIONAL_HOLDERS = "/v3/institutional-holder/{symbol}"
-    INSIDER_TRADING = "/v4/insider-trading"
-    INSIDER_ROSTER = "/v4/insider-roaster"
+    INSTITUTIONAL_HOLDERS = "/stable/institutional-ownership/symbol-positions-summary"
+    INSIDER_TRADING = "/stable/insider-trading/search"
+    INSIDER_ROSTER = "/stable/insider-trading/statistics"
 
     # Historical prices
-    HISTORICAL_PRICES = "/v3/historical-price-full/{symbol}"
-    HISTORICAL_PRICES_DAILY = "/v3/historical-chart/{timeframe}/{symbol}"
+    HISTORICAL_PRICES = "/stable/historical-price-eod/full"
+    HISTORICAL_PRICES_DAILY = "/stable/historical-chart/{timeframe}"
 
     # Earnings transcripts
-    EARNING_CALL_TRANSCRIPT = "/v3/earning_call_transcript/{symbol}"
-    BATCH_EARNING_CALL_TRANSCRIPT = "/v4/batch_earning_call_transcript/{symbol}"
+    EARNING_CALL_TRANSCRIPT = "/stable/earning-call-transcript"
+    BATCH_EARNING_CALL_TRANSCRIPT = "/stable/earning-call-transcript-latest"
 
     # SEC filings
-    SEC_FILINGS = "/v3/sec_filings/{symbol}"
-    SEC_RSS_FEED = "/v4/rss_feed"
+    SEC_FILINGS = "/stable/sec-filings-search/symbol"
+    SEC_RSS_FEED = "/stable/sec-filings-financials"
 
     # News
-    STOCK_NEWS = "/v3/stock_news"
-    STOCK_NEWS_SENTIMENT = "/v4/stock-news-sentiments-rss-feed"
+    STOCK_NEWS = "/stable/news/stock-latest"
+    STOCK_NEWS_SENTIMENT = "/stable/news/stock"
 
     # Market data
-    MARKET_HOURS = "/v3/market-hours"
-    IS_MARKET_OPEN = "/v3/is-the-market-open"
+    MARKET_HOURS = "/stable/all-exchange-market-hours"
+    IS_MARKET_OPEN = "/stable/exchange-market-hours"
 
     # Symbols and search
-    SYMBOL_SEARCH = "/v3/search"
-    SYMBOL_LIST = "/v3/stock/list"
+    SYMBOL_SEARCH = "/stable/search-symbol"
+    SYMBOL_LIST = "/stable/stock-list"
 
 
 # Tier requirements for each endpoint
@@ -111,7 +111,6 @@ TIER_REQUIREMENTS = {
     # Ultimate tier endpoints
     Endpoint.PRICE_TARGET: Tier.ULTIMATE,
     Endpoint.PRICE_TARGET_SUMMARY: Tier.ULTIMATE,
-    Endpoint.PRICE_TARGET_CONSENSUS: Tier.ULTIMATE,
     Endpoint.ANALYST_UPGRADES_DOWNGRADES: Tier.ULTIMATE,
     Endpoint.ANALYST_RECOMMENDATIONS: Tier.ULTIMATE,
     Endpoint.INSIDER_ROSTER: Tier.ULTIMATE,
@@ -126,7 +125,7 @@ TIER_REQUIREMENTS = {
 
 
 # Base URL for FMP API
-BASE_URL = "https://financialmodelingprep.com/api"
+BASE_URL = "https://financialmodelingprep.com"
 
 
 def get_endpoint_url(endpoint: Endpoint, **path_params: str) -> str:
@@ -140,8 +139,10 @@ def get_endpoint_url(endpoint: Endpoint, **path_params: str) -> str:
         Full endpoint path
 
     Example:
-        >>> get_endpoint_url(Endpoint.QUOTE, symbol="AAPL")
-        '/v3/quote/AAPL'
+        >>> get_endpoint_url(Endpoint.QUOTE)
+        '/stable/quote'
+        >>> get_endpoint_url(Endpoint.HISTORICAL_PRICES_DAILY, timeframe="1min")
+        '/stable/historical-chart/1min'
     """
     endpoint_path = endpoint.value
     if path_params:
