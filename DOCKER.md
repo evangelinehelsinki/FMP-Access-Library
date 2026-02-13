@@ -22,7 +22,7 @@ Get the API server and MySQL cache running in under 2 minutes:
 
 ```bash
 # 1. Copy environment template
-cp .env.docker .env
+cp .env.example .env
 
 # 2. Edit .env and set your API keys
 nano .env  # Set FMP_API_KEY and optionally ANTHROPIC_API_KEY
@@ -81,7 +81,7 @@ Download Docker Desktop from [docker.com](https://www.docker.com/products/docker
 Create `.env` from template:
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 ```
 
 Edit `.env` with your configuration:
